@@ -1,8 +1,8 @@
 ### FileStorage API Service
 
 #### Common idea:
-Provide API for securely upload file(s) over presigned upload endpoints.
-Provide parallel upload capability to multiple servers at a time.
+Provide API for securely upload file(s) over presigned upload endpoints.<br/>
+Provide parallel upload capability to multiple servers at a time.<br/>
 Provide ability to synchronize files between FS Cluster members.
 
 ### Operational steps:
@@ -16,7 +16,6 @@ Provide ability to synchronize files between FS Cluster members.
 
 #### Database objects:
 
-**Batch** - truct that holds general context for group of transactions (folder).
-**Transaction** - struct that holds unique file upload context.
-**File** - struct that holds all necessary metadata and relational context information.
-
+**Batch** - truct that holds general context for group of transactions (folder).<br/>
+**Transaction** - struct that holds unique file upload context.<br/>
+**File** - struct that holds all necessary metadata and relational context information.<br/>
