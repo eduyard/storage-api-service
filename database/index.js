@@ -1,16 +1,15 @@
 const mongoose = require('mongoose');
-
-mongoose.Promise = Promise;
+require('./support/types/Int32');
 
 class ModelInstances {
   constructor () {
     this._instances = {};
   }
-
+  
   set (name, instance) {
     this._instances[name] = instance;
   }
-
+  
   get (name) {
     if (!this._instances[name]) {
       throw new Error('Model instance "' + name + '" not found');
@@ -23,46 +22,32 @@ class MongoDBConnectionFactory {
   static get connectionString () {
     return process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storage';
   }
-
-  static createConnection (onConnect, onError) {
+  
+  static async createConnection () {
     try {
       const params = {
-        reconnectTries: Number.MAX_VALUE,
+        reconnectTries: 1,
         reconnectInterval: 1000,
         haInterval: 3000,
-        poolSize: 10,
+        poolSize: 200,
         keepAlive: 100,
         connectTimeoutMS: 30000,
+        autoIndex: true,
+        useCreateIndex: true,
         useNewUrlParser: true,
+        useFindAndModify: false,
         useUnifiedTopology: true
       };
-  
-      mongoose.set('useNewUrlParser', true);
-      mongoose.set('useFindAndModify', false);
-      mongoose.set('useCreateIndex', true);
-      mongoose.set('debug', false);
-    
-      mongoose
-        .connect(this.connectionString, params)
-        .then(() => {
-          console.log('Connection to database established');
-          if (onConnect) onConnect();
-        })
-        .catch(error => {
-          console.error(error);
-          if (onError) onError(error);
-          process.exit(-1);
-        });
-      return mongoose.connection;
+      
+      mongoose.set('debug', process.env.NODE_ENV !== 'production');
+      
+      const connection = await mongoose.createConnection(this.connectionString, params);
+      console.log('Connection to database established');
+      
+      return connection;
     } catch (error) {
       throw new Error(error);
     }
-  }
-}
-
-class TestMongoDBConnectionFactory extends MongoDBConnectionFactory {
-  static createConnection (onConnect, onError) {
-    onConnect();
   }
 }
 
@@ -73,31 +58,34 @@ class Database {
     this._schemas = [];
     this._modelInstances = new ModelInstances();
   }
-
-  connect (onConnect, onError) {
-    if (!this._connection) {
-      this._connection = this._connectionFactory.createConnection(onConnect, onError);
+  
+  async connect () {
+    if (!this.connected) {
+      this._connection = await this._connectionFactory.createConnection();
     }
+    this.initModels();
     return this;
   }
   
-  get connection() {
-    return this._connection;
-  }
-
   get connectionString () {
     return this._connectionFactory.connectionString;
   }
-
+  
+  get connected () {
+    return !!this._connection;
+  }
+  
   setSchemas (schemas) {
     this._schemas = schemas;
-    return this;
   }
-
+  
   get defaultSchemaParams () {
-    return {};
+    return {
+      usePushEach: true,
+      setDefaultsOnInsert: true
+    };
   }
-
+  
   initModels () {
     for (const name in this._schemas) {
       if (!this._schemas.hasOwnProperty(name)) {
@@ -108,23 +96,35 @@ class Database {
         schemaConfig.fields,
         Object.assign(this.defaultSchemaParams, schemaConfig.params)
       );
-
-      const modelInstance = mongoose.model(name, schema);
+      if (schemaConfig.hooks && schemaConfig.hooks.length > 0) {
+        schemaConfig.hooks.forEach(hook => {
+          switch (hook.when + ' ' + hook.event) {
+            case 'pre save' :
+              schema.pre('save', hook.method);
+              break;
+          }
+        });
+      }
+      
+      const modelInstance = this._connection.model(name, schema);
       this._modelInstances.set(name, modelInstance);
     }
     return this;
   }
-
+  
   model (name) {
+    if (!this.connected) {
+      throw Error('Connection to database not established');
+    }
     return this._modelInstances.get(name);
   }
 }
 
 const schemas = './schemas';
-const ConnectionFactory = MongoDBConnectionFactory;
+const
+  ConnectionFactory = MongoDBConnectionFactory;
 
-const db = new Database(ConnectionFactory)
-                .setSchemas(require(schemas))
-                .initModels();
+const db = new Database(ConnectionFactory);
+db.setSchemas(require(schemas));
 
 module.exports = db;

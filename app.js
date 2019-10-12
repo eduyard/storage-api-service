@@ -6,7 +6,6 @@ process.env.version = require('./package.json').version;
 const logger = require('./logger');
 
 // LOADING NECESSARY PACKAGES & COMPONENTS
-require('./database').connect();
 const middlewares = require('./middlewares');
 const framework = require('express');
 const app = framework();

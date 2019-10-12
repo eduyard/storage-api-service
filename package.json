@@ -4,8 +4,8 @@
   "description": "File Storage API for next iteration of SMLS",
   "main": "server.js",
   "scripts": {
-    "start:dev": "node ./node_modules/cross-env/dist/bin/cross-env.js nodemon server.js",
-    "start": "npm run stop; node ./node_modules/cross-env/dist/bin/cross-env.js forever start --uid=filestorage-api-service --append server.js",
+    "start:dev": "node ./node_modules/cross-env/dist/bin/cross-env.js NODE_ENV=development nodemon server.js",
+    "start": "npm run stop; node ./node_modules/cross-env/dist/bin/cross-env.js NODE_ENV=production forever start --uid=filestorage-api-service --append server.js",
     "stop": "forever stop filestorage-api-service",
     "eslint-check": "./node_modules/.bin/eslint .",
     "eslint-fix": "./node_modules/.bin/eslint . --fix"

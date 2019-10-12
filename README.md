@@ -5,7 +5,7 @@ Provide API for securely upload file(s) over presigned upload endpoints.<br/>
 Provide parallel upload capability to multiple servers at a time.<br/>
 Provide ability to synchronize files between FS Cluster members.
 
-### Operational steps:
+####Operational steps:
 
 - Client requests FSAPI and creates **signed upload endpoint** by providing **access token** and **list of files (with their size)**. Access token - assymmetric JWT string which holds ownership identificators. 
 - Server creates Batch record, Transaction records and File records in database for every valid file.
