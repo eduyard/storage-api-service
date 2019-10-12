@@ -1,0 +1,37 @@
+{
+  "name": "filestorage-api-service",
+  "version": "1.0.0",
+  "description": "File Storage API for next iteration of SMLS",
+  "main": "server.js",
+  "scripts": {
+    "start:dev": "node ./node_modules/cross-env/dist/bin/cross-env.js nodemon server.js",
+    "start": "npm run stop; node ./node_modules/cross-env/dist/bin/cross-env.js forever start --uid=filestorage-api-service --append server.js",
+    "stop": "forever stop filestorage-api-service",
+    "eslint-check": "./node_modules/.bin/eslint .",
+    "eslint-fix": "./node_modules/.bin/eslint . --fix"
+  },
+  "author": "Anar K. Jafarov (anar.k.jafarov@gmail.com)",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "joi": "^14.3.1",
+    "multer": "^1.4.2",
+    "cors": "^2.8.4",
+    "cross-env": "^5.2.0",
+    "dotenv": "^8.1.0",
+    "lodash": "^4.17.11",
+    "mongoose": "^5.7.1",
+    "morgan": "^1.9.1",
+    "winston": "^2.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.12.1",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-node": "^5.2.1",
+    "eslint-plugin-promise": "^3.6.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "husky": "^3.0.8"
+  }
+}
