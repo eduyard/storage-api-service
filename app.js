@@ -1,9 +1,10 @@
 require('dotenv').config();
 
-process.env.originator = require('./package.json').name;
-process.env.version = require('./package.json').version;
+process.env.serviceName = require('./package.json').name;
+process.env.serviceVersion = require('./package.json').version;
 
 const logger = require('./logger');
+const {handleError, SystemError, BadRequestError} = require('./errors');
 
 // LOADING NECESSARY PACKAGES & COMPONENTS
 const middlewares = require('./middlewares');
@@ -17,8 +18,8 @@ app.use(middlewares.cors());
 app.get('/', (req, res) => {
   res.status(200).send({
     type: 'service',
-    name: process.env.originator,
-    version: process.env.version
+    name: process.env.serviceName,
+    version: process.env.serviceVersion
   });
 });
 app.use(middlewares.bodyParser.json({limit: '1mb'}));
@@ -27,13 +28,17 @@ app.use(middlewares.catchRealIP);
 app.use(logger.request);
 app.use(require('./routes'));
 app.use((error, req, res, next) => {
-  const {message} = error;
-  if (message.indexOf('JSON')) {
-    return res.status(400).send({message});
+  try {
+    const {message} = error;
+    if(message.indexOf('JSON')) {
+      throw new BadRequestError(message);
+    }
+    logger.error(error);
+    throw new SystemError();
   }
-
-  logger.error(error);
-  res.status(500).send({message});
+  catch (error) {
+    handleError(error, res);
+  }
 });
 
 process.on('uncaughtException', (error) => {
