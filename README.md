@@ -8,7 +8,7 @@ Provide ability to synchronize files between FS Cluster members.
 #### Operational steps:
 
 - Client requests FSAPI and creates **signed upload endpoint** by providing **access token** and **list of files (with their size)**. Access token - asymmetric JWT string which holds ownership identifiers. 
-- Server creates Batch record, Transaction records and File records in database for every valid file.
+- Server creates Batch record and File records in database for every valid file.
 - Server responds with same **list of files (with their size)** populated with **unique endpoints** for each file or populated with **failure** information for specific file.
 - Client sends `multipart/form-data` by providing dedicated file to dedicated endpoint. API will reject file with different filename and size.
 - API saves every file to specific path and shares information to other storage cluster members.
@@ -16,8 +16,7 @@ Provide ability to synchronize files between FS Cluster members.
 
 #### Database objects:
 
-**Batch** - struct that holds general context for group of transactions (folder).<br/>
-**Transaction** - struct that holds unique file upload context.<br/>
+**Batch** - struct that holds general context for group of files (folder).<br/>
 **File** - struct that holds all necessary metadata and relational context information.<br/>
 
 #### Step by step with examples:
@@ -57,9 +56,8 @@ Content-Type: application/json
             "isImage": true,
             "valid": true,
             "ok": true,
-            "transaction": "42b932dc-3549-4adc-8946-a074c74ba594",
             "id": "571fddc0-b40a-4d16-af8c-bf7a41d3bb60",
-            "uploadUrl": "https://storx.smls.com.ua/files/571fddc0-b40a-4d16-af8c-bf7a41d3bb60"
+            "uploadUrl": "https://storx.smls.com.ua/upload/571fddc0-b40a-4d16-af8c-bf7a41d3bb60"
         },
         {
             "name": "-code-abc.jpg"
@@ -70,9 +68,8 @@ Content-Type: application/json
             "isImage": true,
             "valid": true,
             "ok": true,
-            "transaction": "4a12024b-d2bf-401b-b189-b966b3970a44",
             "id": "0e314383-23b9-43e7-b51c-bd466bd6dbd6",
-            "uploadUrl": "https://storx.smls.com.ua/files/0e314383-23b9-43e7-b51c-bd466bd6dbd6"
+            "uploadUrl": "https://storx.smls.com.ua/upload/0e314383-23b9-43e7-b51c-bd466bd6dbd6"
         },
         {
             "name": "rashn fayl neim.jpg"
@@ -93,9 +90,8 @@ Content-Type: application/json
             "isImage": false,
             "valid": true,
             "ok": true,
-            "transaction": "c781f9dd-9f74-4456-ba77-04150182cbe1",
             "id": "19c92b1b-3042-42ba-86db-1c8c82eab1bf",
-            "uploadUrl": "https://storx.smls.com.ua/files/19c92b1b-3042-42ba-86db-1c8c82eab1bf"
+            "uploadUrl": "https://storx.smls.com.ua/upload/19c92b1b-3042-42ba-86db-1c8c82eab1bf"
         },
         {
             "filename": "not-allowed-extension.acd",
@@ -123,7 +119,7 @@ Content-Type: application/json
 
 REQUEST:
 ```
-POST /files/19c92b1b-3042-42ba-86db-1c8c82eab1bf HTTP/1.1
+POST /upload/19c92b1b-3042-42ba-86db-1c8c82eab1bf HTTP/1.1
 Host: storx.smls.com.ua
 Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
 Content-Length: 1024000
@@ -147,9 +143,7 @@ Content-Type: application/json
     "ok": true,
     "id": "19c92b1b-3042-42ba-86db-1c8c82eab1bf",
     "batch": "d9e9f136-58de-4b52-9075-39bb8857c195",
-    "transaction": "c781f9dd-9f74-4456-ba77-04150182cbe1",
     "fileUrl": "https://storx.smls.com.ua/files/19c92b1b-3042-42ba-86db-1c8c82eab1bf/non-image.zip",
-    "transactionUrl": "https://storx.smls.com.ua/transactions/c781f9dd-9f74-4456-ba77-04150182cbe1",
     "batchUrl": "https://storx.smls.com.ua/batches/d9e9f136-58de-4b52-9075-39bb8857c195"
 }
 ```
@@ -171,11 +165,6 @@ URL for batch management (REST API):
 https://{hostname}/batches/{batch}
 ```
 
-URL for transaction management (REST API):
-```
-https://{hostname}/transactions/{transaction}
-```
-
 #### Distribution logic:
 
 When file is uploaded to one of servers (uploadUrl param may have different hostnames for effective network usage) it informs another cluster members about new data to make them retrieve that file too.
@@ -186,7 +175,7 @@ But when user will try to access that file using server which does not have info
 
 #### Security logic:
 
-Using REST API any of entities (batch, transaction) we can set dynamic ACL on it to make it available only for logged in users of requesting system.
+Using REST API any of entities (batch, file) we can set dynamic ACL on it to make it available only for logged in users of requesting system.
 
 To achieve it will require to install on requesting system some module which will be "asked" if it's allowed to give or not using access token that will be shared.
 

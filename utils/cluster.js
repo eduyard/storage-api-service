@@ -1,4 +1,8 @@
 module.exports.start = (callable) => {
+  if (process.env.NODE_ENV !== 'production') {
+    return callable();
+  }
+  
   const logger = require('../logger');
   const cluster = require('cluster');
   let numCPUs = require('os').cpus().length;

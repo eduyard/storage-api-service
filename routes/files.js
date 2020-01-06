@@ -3,30 +3,36 @@ const router = express.Router();
 
 const Joi = require('joi');
 
-const {handleError, NotImplementedError} = require('../errors');
+const FilesController = require('../controllers/Files');
+const {validate} = require('../middlewares');
 
-router
-  .get(
-    '/:id',
-    (req, res) => {
-      try {
-        throw new NotImplementedError();
-      }
-      catch (error) {
-        handleError(error, res);
-      }
-    });
+// creating signed upload urls
+router.post('/prepare',
+  validate({
+    body: {
+      files: Joi.array().items(
+        Joi.object().keys({
+          filename: Joi.string().required(),
+          size: Joi.number().integer().required(),
+          tags: Joi.array().items(Joi.string()).default([])
+        })
+      ).required()
+    }
+  }),
+  FilesController.createSignedUploadUrls);
 
-router
-  .delete(
-    '/:id',
-    (req, res) => {
-      try {
-        throw new NotImplementedError();
-      }
-      catch (error) {
-        handleError(error, res);
-      }
-    });
+// upload single file by prepared (signed) url (has limitation per file size)
+router.post('/:id',
+  FilesController.handleFileThroughSignedUploadUrl);
+
+// direct upload multiple files without signing (has overall limitation on multiple files)
+router.post('/',
+  FilesController.handleDirectFilesUpload);
+
+router.get('/:id',
+  FilesController.getFileInfoById);
+
+router.delete('/:id',
+  FilesController.deleteFileById);
 
 module.exports = router;
