@@ -6,7 +6,7 @@ const {handleError, NotImplementedError} = require('../../errors');
 const {STORAGE_TMP_PATH, STORAGE_FILES_PATH}
   = process.env.NODE_ENV === 'local'
   ? ({
-    STORAGE_TMP_PATH: path.join(__dirname, '..', '..', 'data', 'tmp'),
+    STORAGE_TMP_PATH: path.join(__dirname, '..', '..', 'data', 'uploads'),
     STORAGE_FILES_PATH: path.join(__dirname, '..', '..', 'data', 'files')
   })
   : process.env;
