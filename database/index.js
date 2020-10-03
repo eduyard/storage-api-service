@@ -26,8 +26,6 @@ class MongoDBConnectionFactory {
   static async createConnection () {
     try {
       const params = {
-        reconnectTries: 1,
-        reconnectInterval: 1000,
         haInterval: 3000,
         poolSize: 200,
         keepAlive: 100,

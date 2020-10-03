@@ -1,5 +1,3 @@
-'use strict';
-
 class UnauthorizedError extends Error {
   constructor (...args) {
     super(...args);

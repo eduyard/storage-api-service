@@ -1,5 +1,3 @@
-'use strict';
-
 class NotAcceptableError extends Error {
   constructor (...args) {
     const message = Array.isArray(args[0]) ? 'Not acceptable request' : args[0];

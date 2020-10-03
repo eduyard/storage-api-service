@@ -1,5 +1,3 @@
-'use strict';
-
 class ValidationError extends Error {
   constructor (...args) {
     const message = Array.isArray(args[0]) ? 'Validation conditions unmet' : args[0];

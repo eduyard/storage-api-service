@@ -1,5 +1,3 @@
-'use strict';
-
 class BadRequestError extends Error {
   constructor (...args) {
     const message = Array.isArray(args[0]) ? 'Required request conditions unmet' : args[0];

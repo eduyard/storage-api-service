@@ -50,7 +50,7 @@ module.exports = async (req, res) => {
     
     const busboy = new Busboy({headers: req.headers});
     
-    busboy.on('file', (fieldname, readStream, filename) => {
+    busboy.on('file', (fieldName, readStream, filename) => {
       const tmpFile = path.join(STORAGE_TMP_PATH, filename);
       const writeStream = fs.createWriteStream(tmpFile);
       const fileInfo = {

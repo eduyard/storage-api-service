@@ -1,5 +1,3 @@
-'use strict';
-
 class ForbiddenError extends Error {
   constructor (...args) {
     super(...args);

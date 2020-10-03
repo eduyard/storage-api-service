@@ -1,5 +1,3 @@
-'use strict';
-
 // 4xx
 module.exports.BadRequestError = require('./BadRequestError');
 module.exports.ValidationError = require('./ValidationError');

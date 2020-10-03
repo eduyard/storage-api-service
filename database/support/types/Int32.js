@@ -1,5 +1,3 @@
-'use strict';
-
 const mongoose = require('mongoose');
 
 const INT32_MAX = 0x7FFFFFFF;

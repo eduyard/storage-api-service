@@ -16,13 +16,17 @@ exceptionHandlers.push(consoleTransport);
 
 // Creating logger instance
 const
-  logger = new winston.Logger({
+  logger = new winston.createLogger({
     transports,
-    exitOnError: true
+    format: winston.format.combine(
+      winston.format.splat(),
+      winston.format.simple()
+    ),
+    exitOnError: false
   });
 
 // Handling Unhandled Exceptions
-logger.handleExceptions(exceptionHandlers);
+logger.exceptions.handle(exceptionHandlers);
 
 // express middleware for request logging
 const morgan = require('morgan');
