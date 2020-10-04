@@ -9,8 +9,8 @@
     "stop:dev": "forever stop filestorage-api-service-dev",
     "start": "NODE_ENV=production forever start --uid=filestorage-api-service --append server.js",
     "stop": "forever stop filestorage-api-service",
-    "eslint": "./node_modules/.bin/eslint .",
-    "eslint-fix": "./node_modules/.bin/eslint . --fix"
+    "lint": "./node_modules/.bin/eslint .",
+    "lint:fix": "./node_modules/.bin/eslint . --fix"
   },
   "author": "Anar K. Jafarov (anar.k.jafarov@gmail.com)",
   "license": "ISC",
@@ -37,6 +37,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "husky": "^4.3.0"
+    "husky": "^4.3.0",
+    "prettier": "^2.1.2",
+    "typescript": "^4.0.3"
   }
 }
