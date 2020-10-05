@@ -40,7 +40,7 @@ module.exports = (error, responseObject) => {
     case NotImplementedError :
       const data = {
         type: error.constructor.statusText,
-        message: error.constructor.message
+        message: error.constructor.message,
       };
       if (error.messages) {
         data.messages = error.messages;
@@ -54,6 +54,6 @@ module.exports = (error, responseObject) => {
     .status(SystemError.statusCode)
     .send({
       type: SystemError.statusText,
-      message: SystemError.message
+      message: SystemError.message,
     });
 };

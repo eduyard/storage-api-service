@@ -4,7 +4,7 @@ const router = express.Router();
 const Joi = require('joi');
 
 const FilesController = require('../controllers/Files');
-const {validate} = require('../middlewares');
+const { validate } = require('../middlewares');
 
 // creating signed upload urls
 router.post('/prepare',
@@ -14,10 +14,10 @@ router.post('/prepare',
         Joi.object().keys({
           filename: Joi.string().required(),
           size: Joi.number().integer().required(),
-          tags: Joi.array().items(Joi.string()).default([])
+          tags: Joi.array().items(Joi.string()).default([]),
         })
-      ).required()
-    }
+      ).required(),
+    },
   }),
   FilesController.createSignedUploadUrls);
 

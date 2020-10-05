@@ -26,14 +26,14 @@ module.exports = (schema) => {
       toValidate,
       schema,
       {
-        abortEarly: false
+        abortEarly: false,
       },
       (error, validated) => {
         if (error) {
           const messages = error.details.map(item => {
             return {
               field: item.path[1],
-              message: item.message
+              message: item.message,
             };
           });
           return handleError(new ValidationError(messages), res);

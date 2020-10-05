@@ -2,7 +2,7 @@ module.exports.start = (callable) => {
   if (process.env.NODE_ENV !== 'production') {
     return callable();
   }
-  
+
   const logger = require('../logger');
   const cluster = require('cluster');
   let numCPUs = require('os').cpus().length;
@@ -17,7 +17,7 @@ module.exports.start = (callable) => {
   const handleExit = (deadWorker, code) => {
     if (code !== 0) {
       logger.error('Worker', deadWorker.process.pid, 'dead');
-      let worker = cluster.fork();
+      const worker = cluster.fork();
       logger.info('Re-spawning worker', worker.process.pid);
     }
   };
@@ -42,17 +42,17 @@ module.exports.start = (callable) => {
         return;
       }
 
-      logger.info('Killing worker', workers[i]);
+      logger.info(`Killing worker ${workers[i]}`);
       if (cluster.workers[workers[i]]) {
         cluster.workers[workers[i]].on('disconnect', () => {
-          logger.info('Worker', workers[i], 'detached');
+          logger.info(`Worker ${workers[i]} detached`);
         });
         cluster.workers[workers[i]].disconnect();
       }
 
       const newWorker = cluster.fork();
       newWorker.on('listening', () => {
-        logger.info('Replacement worker with pid:', newWorker.process.pid, 'attached');
+        logger.info(`Replacement worker with pid: ${newWorker.process.pid} attached`);
         i++;
         reloadWorker();
       });
@@ -65,7 +65,8 @@ module.exports.start = (callable) => {
     return callable();
   }
 
-  logger.info('Starting', instances, 'instance(s)');
+  logger.info(`Starting ${instances} instance(s)`);
+
   for (let i = 0; i < instances; i++) {
     cluster.fork();
   }

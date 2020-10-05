@@ -1,9 +1,6 @@
 const randomBytes = require('crypto').randomBytes;
 
-const byteHexMap = [];
-for (let i = 0; i < 256; ++i) {
-  byteHexMap[i] = (i + 0x100).toString(16).substr(1);
-}
+const byteHexMap = [...Array(256).keys()].map(i => (i + 0x100).toString(16).substr(1));
 
 /**
  * 16 byte array to UUID as:
@@ -16,7 +13,7 @@ const bufferToUuid = (buffer) => {
     byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]],
     byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]],
     byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]],
-    byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]]
+    byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]] + byteHexMap[buffer[i++]],
   ].join('-');
 };
 
