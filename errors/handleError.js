@@ -35,8 +35,9 @@ function log (error) {
  *
  * @param error
  * @param responseObject
+ * @param payload
  */
-module.exports = (error, responseObject) => {
+module.exports = (error, responseObject, payload = null) => {
   switch (error.constructor) {
     case BadRequestError :
     case ValidationError :
@@ -50,9 +51,15 @@ module.exports = (error, responseObject) => {
         type: error.constructor.statusText,
         message: error.constructor.message,
       };
+
       if (error.messages) {
         data.messages = error.messages;
       }
+
+      if (payload) {
+        data.payload = payload;
+      }
+
       return responseObject
         .status(error.constructor.statusCode)
         .send(data);
@@ -63,6 +70,7 @@ module.exports = (error, responseObject) => {
     .send({
       type: SystemError.statusText,
       message: SystemError.message,
+      ...(payload ? { payload } : {}),
     });
 
   log(error);

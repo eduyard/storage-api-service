@@ -6,6 +6,19 @@ const Joi = require('joi');
 const FilesController = require('../controllers/Files');
 const { validate } = require('../middlewares');
 
+router.post('/download-from',
+  validate({
+    body: {
+      files: Joi.array().items(
+        Joi.object().keys({
+          remoteUrl: Joi.string().required(),
+          tags: Joi.array().items(Joi.string()).default([]),
+        }).required(),
+      ).min(1).required(),
+    },
+  }),
+  FilesController.downloadFilesFromRemoteUrls);
+
 // creating signed upload urls
 router.post('/prepare',
   validate({

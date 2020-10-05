@@ -81,6 +81,6 @@ module.exports = async (req, res) => {
 
     req.pipe(busboy);
   } catch (error) {
-    handleError(error, res);
+    handleError(error, res, { reason: error.message });
   }
 };
