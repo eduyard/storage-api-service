@@ -1,11 +1,68 @@
 const env = require('dotenv');
+env.config();
+
+const fs = require('fs').promises;
+const path = require('path');
+const { nanoid } = require('nanoid');
+
 const framework = require('express');
 
 const db = require('./database');
 const logger = require('./logger');
 const middlewares = require('./middlewares');
 
-function createApp () {
+async function preCheckup () {
+  try {
+    if (process.env.NODE_ENV === 'local') {
+      process.env.STORAGE_TMP_PATH = path.join(__dirname, 'data', 'uploads');
+      process.env.STORAGE_FILES_PATH = path.join(__dirname, 'data', 'files');
+
+      await fs.mkdir(process.env.STORAGE_TMP_PATH, { recursive: true });
+      await fs.mkdir(process.env.STORAGE_FILES_PATH, { recursive: true });
+    }
+  } catch (error) {
+    logger.error(error.message);
+    process.exitCode = -2;
+    process.exit();
+  }
+}
+
+async function doCheckup () {
+  try {
+    logger.info(`Checking TMP folder (${process.env.STORAGE_TMP_PATH}) for accessibility`);
+    const tmpPathStat = await fs.stat(process.env.STORAGE_TMP_PATH);
+    if (!tmpPathStat.isDirectory()) {
+      throw new Error(`${process.env.STORAGE_TMP_PATH} is not directory`);
+    }
+
+    logger.info(`Checking TMP folder (${process.env.STORAGE_TMP_PATH}) for writability`);
+    const testFile1 = path.join(process.env.STORAGE_TMP_PATH, `.${nanoid(64)}.testfile`);
+    await fs.writeFile(testFile1, nanoid(1024));
+    await fs.unlink(testFile1);
+
+    logger.info(`Checking FILES folder (${process.env.STORAGE_FILES_PATH}) for accessibility`);
+    const filesPathStat = await fs.stat(process.env.STORAGE_FILES_PATH);
+    if (!filesPathStat.isDirectory()) {
+      throw new Error(`${process.env.STORAGE_FILES_PATH} is not directory`);
+    }
+
+    logger.info(`Checking FILES folder (${process.env.STORAGE_FILES_PATH}) for writability`);
+    const testFile2 = path.join(process.env.STORAGE_FILES_PATH, `.${nanoid(64)}.testfile`);
+    await fs.writeFile(testFile2, nanoid(1024));
+    await fs.unlink(testFile2);
+  } catch (error) {
+    logger.error(error.message);
+    process.exitCode = -1;
+    process.exit();
+  }
+}
+
+async function createApp () {
+  await preCheckup();
+  await doCheckup();
+
+  logger.info('\nCheckups finished successfully\n');
+
   const app = framework();
 
   app.set('trust proxy', 1);
@@ -43,9 +100,10 @@ async function boot () {
   process.env.originator = require('./package.json').name;
   process.env.version = require('./package.json').version;
 
+  const app = await createApp();
   await db.connect();
 
-  return createApp();
+  return app;
 }
 
 module.exports = {

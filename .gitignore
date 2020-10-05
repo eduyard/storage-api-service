@@ -66,3 +66,5 @@ tmp
 log
 storage
 yarn-error.log
+data/uploads/*
+data/files/*

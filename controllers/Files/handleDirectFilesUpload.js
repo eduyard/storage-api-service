@@ -1,15 +1,12 @@
 const path = require('path');
 const fs = require('fs');
+const { nanoid } = require('nanoid/async');
 const Busboy = require('busboy');
+
+const logger = require('./../../logger');
 const { handleError, NotImplementedError } = require('../../errors');
 
-const { STORAGE_TMP_PATH, STORAGE_FILES_PATH } =
-  process.env.NODE_ENV === 'local'
-    ? ({
-      STORAGE_TMP_PATH: path.join(__dirname, '..', '..', 'data', 'uploads'),
-      STORAGE_FILES_PATH: path.join(__dirname, '..', '..', 'data', 'files'),
-    })
-    : process.env;
+const { STORAGE_TMP_PATH, STORAGE_FILES_PATH } = process.env;
 
 const delay = (ms = 100) => new Promise(resolve => setTimeout(resolve, ms));
 const waitFilesToBeClosed = async (files) => {
@@ -50,9 +47,11 @@ module.exports = async (req, res) => {
 
     const busboy = new Busboy({ headers: req.headers });
 
-    busboy.on('file', (fieldName, readStream, filename) => {
-      const tmpFile = path.join(STORAGE_TMP_PATH, filename);
+    busboy.on('file', async (fieldName, readStream, filename) => {
+      const rnd = await nanoid(64);
+      const tmpFile = path.join(STORAGE_TMP_PATH, `${rnd}${path.extname(filename)}`);
       const writeStream = fs.createWriteStream(tmpFile);
+
       const fileInfo = {
         filename,
         tmpFile,
@@ -62,16 +61,16 @@ module.exports = async (req, res) => {
       };
       files.push(fileInfo);
 
-      writeStream.on('error', (error) => {
-        fileInfo.error = true;
-        fileInfo.errorReason = error.message;
-      });
-
       writeStream.on('close', () => {
         fileInfo.closed = true;
       });
 
       readStream.pipe(writeStream);
+
+      writeStream.on('error', (error) => {
+        fileInfo.error = true;
+        fileInfo.errorReason = error.message;
+      });
     });
 
     busboy.on('finish', async () => {

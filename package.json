@@ -4,7 +4,7 @@
   "description": "File Storage API for next iteration of SMLS",
   "main": "server.js",
   "scripts": {
-    "debug": "NODE_ENV=debug PORT=8381 nodemon --inspect=0.0.0.0:9229 server.js",
+    "debug": "NODE_ENV=local PORT=8381 nodemon --inspect=0.0.0.0:9229 server.js",
     "start:dev": "NODE_ENV=development forever start --uid=filestorage-api-service-dev --append server.js",
     "stop:dev": "forever stop filestorage-api-service-dev",
     "start": "NODE_ENV=production forever start --uid=filestorage-api-service --append server.js",

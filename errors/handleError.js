@@ -1,3 +1,5 @@
+const logger = require('../logger');
+
 const BadRequestError = require('./BadRequestError');
 const ValidationError = require('./ValidationError');
 const UnauthorizedError = require('./UnauthorizedError');
@@ -7,6 +9,12 @@ const NotAllowedError = require('./NotAllowedError');
 const NotAcceptableError = require('./NotAcceptableError');
 const SystemError = require('./SystemError');
 const NotImplementedError = require('./NotImplementedError');
+
+function log (error) {
+  if (process.env.NODE_ENV !== 'production') {
+    logger.error(error);
+  }
+}
 
 /**
  * Handles error and responds with appropriate response object.
@@ -50,10 +58,12 @@ module.exports = (error, responseObject) => {
         .send(data);
   }
 
-  return responseObject
+  responseObject
     .status(SystemError.statusCode)
     .send({
       type: SystemError.statusText,
       message: SystemError.message,
     });
+
+  log(error);
 };
