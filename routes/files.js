@@ -11,7 +11,7 @@ router.post('/download-from',
     body: {
       files: Joi.array().items(
         Joi.object().keys({
-          remoteUrl: Joi.string().required(),
+          url: Joi.string().required(),
           tags: Joi.array().items(Joi.string()).default([]),
         }).required(),
       ).min(1).required(),
