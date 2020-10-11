@@ -1,3 +1,7 @@
+const pkg = require('./package.json');
+process.env.serviceName = pkg.name;
+process.env.serviceVersion = pkg.version;
+
 const env = require('dotenv');
 env.config();
 
