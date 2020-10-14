@@ -70,9 +70,10 @@ module.exports = async (req, res, pipe = false) => {
   try {
     const sourceServer = req.sourceServer;
     let url = req.body && req.body.url ? req.body.url : req.url;
+    const decodedUrl = `${sourceServer.protocol}://${sourceServer.hostname}${decodeURI(url)}`;
     url = `${sourceServer.protocol}://${sourceServer.hostname}${url}`;
 
-    file = await File.findOne({ sourceServerUrl: url });
+    file = await File.findOne({ $or: [{ sourceServerUrl: url }, { sourceServerUrl: decodedUrl }] });
     if (file && file.completed) {
       const filePath = path.join(STORAGE_FILES_PATH, ...file._id.match(/.{1,8}/g), file.name);
       try {
