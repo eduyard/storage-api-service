@@ -3,6 +3,10 @@ const fsp = require('fs').promises;
 const path = require('path');
 const http = require('http');
 const https = require('https');
+const { URL } = require('url');
+
+const mimeTypes = require('mime-types');
+const slugify = require('slugify');
 
 const _ = require('lodash');
 const { nanoid } = require('nanoid/async');
@@ -20,7 +24,8 @@ class DownloadResult {
       this.entries.map(async (entry) => {
         try {
           await entry.delete();
-        } catch (error) {}
+        } catch (error) {
+        }
       })
     );
     this.#isCleanedUp = true;
@@ -59,6 +64,8 @@ class FileDownloadEntry {
   url = null;
   originalName = null;
   filename = null;
+  tmpFile = null;
+  tmpFilename = null;
   file = null;
   tags = [];
   closed = false;
@@ -123,7 +130,7 @@ class FileDownloadEntry {
       return true;
     }
 
-    await fsp.unlink(this.file);
+    await fsp.unlink(this.tmpFile);
     this.#deleted = true;
   }
 }
@@ -149,14 +156,20 @@ class Downloader {
         });
 
         try {
-          entry.id = await nanoid(64);
-          entry.originalName = path.basename(url);
-          entry.filename = `${entry.id}${path.extname(entry.originalName)}`;
-          entry.file = path.join(this.#storagePath, entry.filename);
+          const { pathname } = new URL(url);
 
-          await this.downloadFromRemoteUrl(url, entry.file);
+          entry.id = await nanoid(32);
+          entry.originalName = path.basename(pathname);
+          entry.extension = path.extname(entry.originalName).replace('.', '');
+          entry.filename = slugify(entry.originalName.split('.').slice(0, -1).join('.')) + '.' + entry.extension; // safe name
+          entry.tmpFilename = `${entry.id}${path.extname(entry.originalName)}`;
+          entry.tmpFile = path.join(this.#storagePath, entry.tmpFilename);
+          entry.mimeType = mimeTypes.lookup(entry.extension);
+          entry.isImage = entry.mimeType.startsWith('image/');
 
-          entry.stats = await fsp.stat(entry.file);
+          await this.downloadFromRemoteUrl(url, entry.tmpFile);
+
+          entry.stats = await fsp.stat(entry.tmpFile);
           entry.stats = _.pick(entry.stats, ['ctime', 'size']);
           entry.stats = { size: entry.stats.size, createdAt: entry.stats.ctime };
 
@@ -193,7 +206,15 @@ class Downloader {
         requestCert: false,
         agent: false,
       };
+
+      console.log('downloading from:', url);
+
       transport.get(url, transportOptions, (response) => {
+        const { statusCode } = response;
+        if (parseInt(statusCode) !== 200) {
+          rejected = true;
+          return reject(new Error('Non 200 status code'));
+        }
         response.pipe(writeStream);
       });
 

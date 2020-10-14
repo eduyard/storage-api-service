@@ -20,7 +20,15 @@ class ModelInstances {
 
 class MongoDBConnectionFactory {
   static get connectionString () {
-    return process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/storage';
+    if (!process.env.MONGO_URI) {
+      throw new Error('DB connection string not provided, MONGO_URI environment variable not defined!');
+    }
+    
+    if (!process.env.MONGO_URI.startsWith('mongodb://')) {
+      throw new Error('Invalid DB connection, maintain MONGO_URI environment variable to have format: mongodb://[USER:PASS@]HOST:PORT/DB_NAME');
+    }
+    
+    return process.env.MONGO_URI;
   }
   
   static async createConnection () {
@@ -37,7 +45,7 @@ class MongoDBConnectionFactory {
         useUnifiedTopology: true
       };
       
-      mongoose.set('debug', process.env.NODE_ENV !== 'production');
+      //mongoose.set('debug', process.env.NODE_ENV !== 'production');
       
       const connection = await mongoose.createConnection(this.connectionString, params);
       console.log('Connection to database established');
@@ -119,8 +127,7 @@ class Database {
 }
 
 const schemas = './schemas';
-const
-  ConnectionFactory = MongoDBConnectionFactory;
+const ConnectionFactory = MongoDBConnectionFactory;
 
 const db = new Database(ConnectionFactory);
 db.setSchemas(require(schemas));

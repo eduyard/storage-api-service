@@ -6,7 +6,7 @@ module.exports.start = (callable) => {
   const logger = require('../logger');
   const cluster = require('cluster');
   let numCPUs = require('os').cpus().length;
-  if (numCPUs > 1) numCPUs = parseInt(numCPUs / 3) + 1;
+  if (numCPUs > 1) numCPUs = parseInt(numCPUs / 2) + 1;
   const instances = numCPUs;
 
   process.on('uncaughtException', (err) => {

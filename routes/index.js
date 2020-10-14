@@ -14,11 +14,12 @@ const FilesController = require('../controllers/Files');
 router.get(
   '*',
   detectSourceServer,
-  FilesController.serveFromSourceServer);
+  (req, res) => FilesController.copyFromSourceServer(req, res, true));
+  // FilesController.serveFromSourceServer);
 
 router.put(
   '*',
   detectSourceServer,
-  FilesController.copyFromSourceServer);
+  (req, res) => FilesController.copyFromSourceServer(req, res, false));
 
 module.exports = router;

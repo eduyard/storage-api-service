@@ -1,6 +1,6 @@
-const clusterRoutine = async () => {
-  require('dotenv').config();
+require('dotenv').config();
 
+const clusterRoutine = async () => {
   const http = require('http');
   const app = require('./app');
   const logger = require('./logger');

@@ -99,13 +99,12 @@ async function createApp () {
 }
 
 async function boot () {
-  env.config();
-
   process.env.originator = require('./package.json').name;
   process.env.version = require('./package.json').version;
 
-  const app = await createApp();
   await db.connect();
+
+  const app = await createApp();
 
   return app;
 }
