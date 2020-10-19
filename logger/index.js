@@ -7,7 +7,8 @@ logger.request = morgan(
   {
     stream: {
       write: console.info
-    }
+    },
+    ...(process.env.NODE_ENV === 'production' ? {skip: (req, res) => res.statusCode < 300} : {}),
   }
 );
 

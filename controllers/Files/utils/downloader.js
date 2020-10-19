@@ -161,10 +161,13 @@ class Downloader {
           entry.id = await nanoid(32);
           entry.originalName = path.basename(pathname);
           entry.extension = path.extname(entry.originalName).replace('.', '');
-          entry.filename = slugify(decodeURI(entry.originalName.split('.').slice(0, -1).join('.'))) + '.' + entry.extension; // safe name
+          entry.filename =
+            slugify(decodeURI(
+              path.basename(entry.originalName, path.extname(entry.originalName))
+            )) + (entry.extension ? ('.' + entry.extension) : ''); // safe name
           entry.tmpFilename = `${entry.id}${path.extname(entry.originalName)}`;
           entry.tmpFile = path.join(this.#storagePath, entry.tmpFilename);
-          entry.mimeType = mimeTypes.lookup(entry.extension);
+          entry.mimeType = mimeTypes.lookup(entry.extension) || 'application/octet-stream';
           entry.isImage = entry.mimeType.startsWith('image/');
 
           await this.downloadFromRemoteUrl(url, entry.tmpFile);
@@ -207,7 +210,7 @@ class Downloader {
         agent: false,
       };
 
-      console.log('downloading from:', url, 'to:', to, 'filename:', filename);
+      // console.log('downloading from:', url, 'to:', to, 'filename:', filename);
 
       transport.get(url, transportOptions, (response) => {
         const { statusCode } = response;

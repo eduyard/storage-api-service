@@ -66,10 +66,10 @@ const saveFiles = async (downloadResult) => {
 
 module.exports = async (req, res, pipe = false) => {
   let result, file;
+  const sourceServer = req.sourceServer;
+  let url = req.body && req.body.url ? req.body.url : req.url;
 
   try {
-    const sourceServer = req.sourceServer;
-    let url = req.body && req.body.url ? req.body.url : req.url;
     const decodedUrl = `${sourceServer.protocol}://${sourceServer.hostname}${decodeURI(url)}`;
     url = `${sourceServer.protocol}://${sourceServer.hostname}${url}`;
 
@@ -117,6 +117,8 @@ module.exports = async (req, res, pipe = false) => {
     res.setHeader('Content-Length', file.size);
     fs.createReadStream(filePath).pipe(res);
   } catch (error) {
+    console.log(url);
+    console.log(error);
     handleError(error, res, { reason: error.message });
   } finally {
     if (result) {
