@@ -64,6 +64,34 @@ const saveFiles = async (downloadResult) => {
   return downloadResult;
 };
 
+const deliverFileAsResponse = async (file, res, pipe = false, filePath = null) => {
+  if (!filePath) {
+    filePath = path.join(STORAGE_FILES_PATH, ...file._id.match(/.{1,8}/g), file.name);
+  }
+
+  await fsp.access(filePath, fs.constants.F_OK);
+
+  if (!pipe) {
+    return res.status(200).send(file);
+  }
+  res.setHeader('Cache-control', 'public, max-age=604800');
+  res.setHeader('Last-Modified', (new Date(file.createdAt)).toUTCString());
+  res.setHeader('Content-Type', file.mimeType);
+  res.setHeader('Content-Length', file.size);
+  const stream = fs.createReadStream(filePath);
+  stream.pipe(res);
+  stream.on('end', () => {
+    try { stream.unpipe(res); } catch (error) { console.log('UNPIPE:', error.message); }
+    try { stream.close(); } catch (error) { console.log('CLOSE:', error.message); }
+    try { stream.destroy(); } catch (error) { console.log('DESTROY:', error.message); }
+  });
+  res.on('close', () => {
+    try { stream.unpipe(res); } catch (error) { console.log('UNPIPE:', error.message); }
+    try { stream.close(); } catch (error) { console.log('CLOSE:', error.message); }
+    try { stream.destroy(); } catch (error) { console.log('DESTROY:', error.message); }
+  });
+};
+
 module.exports = async (req, res, pipe = false) => {
   let result, file;
   const sourceServer = req.sourceServer;
@@ -71,24 +99,13 @@ module.exports = async (req, res, pipe = false) => {
 
   try {
     const decodedUrl = `${sourceServer.protocol}://${sourceServer.hostname}${decodeURI(url)}`;
+    const encodedUrl = `${sourceServer.protocol}://${sourceServer.hostname}${encodeURI(url)}`;
     url = `${sourceServer.protocol}://${sourceServer.hostname}${url}`;
 
     file = await File.findOne({ $or: [{ sourceServerUrl: url }, { sourceServerUrl: decodedUrl }] });
     if (file && file.completed) {
-      const filePath = path.join(STORAGE_FILES_PATH, ...file._id.match(/.{1,8}/g), file.name);
-      try {
-        await fsp.access(filePath, fs.constants.F_OK);
-
-        if (!pipe) {
-          return res.status(200).send(file.toObject());
-        }
-        res.setHeader('Cache-control', 'public, max-age=604800');
-        res.setHeader('Last-Modified', (new Date(file.createdAt)).toUTCString());
-        res.setHeader('Content-Type', file.mimeType);
-        res.setHeader('Content-Length', file.size);
-        fs.createReadStream(filePath).pipe(res);
-        return;
-      } catch {}
+      await deliverFileAsResponse(file, res, pipe);
+      return;
     }
 
     if (file) {
@@ -107,15 +124,7 @@ module.exports = async (req, res, pipe = false) => {
       return res.status(204).end();
     }
 
-    if (!pipe) {
-      return res.status(201).send(file);
-    }
-
-    res.setHeader('Cache-control', 'public, max-age=604800');
-    res.setHeader('Last-Modified', (new Date(file.createdAt)).toUTCString());
-    res.setHeader('Content-Type', file.mimeType);
-    res.setHeader('Content-Length', file.size);
-    fs.createReadStream(filePath).pipe(res);
+    await deliverFileAsResponse(file, res, pipe, filePath);
   } catch (error) {
     console.log(url);
     console.log(error);

@@ -201,8 +201,6 @@ class Downloader {
         return reject(new Error(`Invalid URL: Cannot extract file name from "${url}"`));
       }
 
-      const writeStream = fs.createWriteStream(to);
-
       const transport = url.startsWith('https://') ? https : http;
       const transportOptions = {
         rejectUnauthorized: false,
@@ -210,28 +208,31 @@ class Downloader {
         agent: false,
       };
 
-      // console.log('downloading from:', url, 'to:', to, 'filename:', filename);
-
       transport.get(url, transportOptions, (response) => {
+        let rejected = false;
+
         const { statusCode } = response;
         if (parseInt(statusCode) !== 200) {
           rejected = true;
           return reject(new Error('Non 200 status code'));
         }
+
+        const writeStream = fs.createWriteStream(to);
         response.pipe(writeStream);
-      });
 
-      let rejected = false;
+        writeStream.on('close', () => {
+          if (!rejected) {
+            resolve(to);
+          }
 
-      writeStream.on('close', () => {
-        if (!rejected) {
-          resolve(to);
-        }
-      });
+          try { response.unpipe(writeStream); } catch (error) { console.log('UNPIPE:', error.message); }
+          try { writeStream.destroy(); } catch (error) { console.log('DESTROY:', error.message); }
+        });
 
-      writeStream.on('error', (error) => {
-        rejected = true;
-        reject(error);
+        writeStream.on('error', (error) => {
+          rejected = true;
+          reject(error);
+        });
       });
     });
   }
