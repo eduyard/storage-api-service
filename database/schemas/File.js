@@ -7,73 +7,73 @@ module.exports = {
   params: {
     collection: 'files',
     timestamps: true,
-    versionKey: false,
+    versionKey: false
   },
   fields: {
     _id: {
       type: Schema.Types.String,
-      default: function () {
+      default: function() {
         return nanoid(32);
-      },
+      }
     },
     batch: {
       type: Schema.Types.String,
       index: true,
       ref: 'Batch',
-      default: null,
+      default: null
     },
     size: {
       type: Schema.Types.Number,
-      default: null,
+      default: null
     },
     name: {
       type: Schema.Types.String,
-      required: true,
+      required: true
     },
     originalName: {
       type: Schema.Types.String,
-      default: null,
+      default: null
     },
     extension: {
       type: Schema.Types.String,
-      default: '',
+      default: ''
     },
     mimeType: {
       type: Schema.Types.String,
-      default: 'application/octet-stream',
+      default: 'application/octet-stream'
     },
     isImage: {
       type: Schema.Types.Boolean,
-      default: false,
+      default: false
     },
     tags: {
       type: [Schema.Types.String],
       index: true,
-      default: [],
+      default: []
     },
     sourceServerUrl: {
       type: Schema.Types.String,
       unique: true,
-      default: null,
+      default: null
     },
     sourceServerAliasUrlPath: {
       type: Schema.Types.String,
       index: true,
-      default: null,
+      default: null
     },
     replicatedToServers: {
       type: [Schema.Types.String],
-      default: [],
+      default: []
     },
     completed: {
       type: Schema.Types.Boolean,
       index: true,
-      default: false,
+      default: false
     },
     deleted: {
       type: Schema.Types.Boolean,
       index: true,
-      default: false,
-    },
-  },
+      default: false
+    }
+  }
 };

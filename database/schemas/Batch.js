@@ -7,30 +7,30 @@ module.exports = {
   params: {
     collection: 'batches',
     timestamps: true,
-    versionKey: false,
+    versionKey: false
   },
   fields: {
     _id: {
       type: Schema.Types.String,
-      default: function () {
+      default: function() {
         return nanoid(32);
-      },
+      }
     },
     batch: {
       type: Schema.Types.String,
       index: true,
       ref: 'Batch',
-      default: null,
+      default: null
     },
     files: {
       type: [Schema.Types.String],
       ref: 'File',
-      default: [],
+      default: []
     },
     deleted: {
       type: Schema.Types.Boolean,
       index: true,
-      default: false,
-    },
-  },
+      default: false
+    }
+  }
 };

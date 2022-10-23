@@ -103,9 +103,9 @@ async function boot () {
   process.env.version = require('./package.json').version;
 
   await db.connect();
-
+  
   const app = await createApp();
-
+  
   return app;
 }
 

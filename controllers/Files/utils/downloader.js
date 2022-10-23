@@ -210,30 +210,33 @@ class Downloader {
 
       transport.get(url, transportOptions, (response) => {
         let rejected = false;
-
+  
         const { statusCode } = response;
         if (parseInt(statusCode) !== 200) {
           rejected = true;
           return reject(new Error('Non 200 status code'));
         }
-
+  
         const writeStream = fs.createWriteStream(to);
         response.pipe(writeStream);
-
+  
+  
         writeStream.on('close', () => {
           if (!rejected) {
             resolve(to);
           }
-
-          try { response.unpipe(writeStream); } catch (error) { console.log('UNPIPE:', error.message); }
-          try { writeStream.destroy(); } catch (error) { console.log('DESTROY:', error.message); }
+  
+          try {response.unpipe(writeStream);} catch (error) {console.log('UNPIPE:', error.message);}
+          try {writeStream.destroy();} catch (error) {console.log('DESTROY:', error.message);}
         });
-
+  
         writeStream.on('error', (error) => {
           rejected = true;
           reject(error);
         });
       });
+
+
     });
   }
 }
